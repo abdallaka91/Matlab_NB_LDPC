@@ -11,7 +11,7 @@ refresh_figure_every = 20;
 max_err_cnt = 50;
 max_gen = 5e4;
 max_iter = 10;
-ebn0 = 4.2:0.2:5; %dB
+ebn0 = 4:0.2:5; %dB
 H_matrix_mat_fl_nm = 'Generated_124x806_GF32';
 
 
@@ -48,7 +48,7 @@ M = size(H, 1);
 N = size(H, 2);
 K = N-M;
 
-lgnd = ['VP_SF__' H_matrix_mat_fl_nm '_' num2str(max_iter) '_Iter_V0_'...
+lgnd = ['MV_SF__' H_matrix_mat_fl_nm '_' num2str(max_iter) '_Iter_V0_'...
     num2str(v0) '_V1_' num2str(v1)];
 
 p1 = 1;
