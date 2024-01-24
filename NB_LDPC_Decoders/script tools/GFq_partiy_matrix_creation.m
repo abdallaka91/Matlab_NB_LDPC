@@ -1,10 +1,10 @@
 clear
 
 pth4 = (fullfile(fileparts(pwd), 'related_variables\alists\'));
-q = 4;
-N_eye = 4;
-M_eye = 2;
-eye_size = q-1;
+q = 31;
+N_eye = 6;
+M_eye = 3;
+eye_size = 34;
 
 M = M_eye*eye_size;
 N = N_eye*eye_size;
@@ -41,7 +41,8 @@ for  i = 2 : M_eye
 
     s=1;
     while s~=0
-        per1 = randi([1 q-1], 1, N_eye);
+        per1 = randi(q-1, 1, N_eye);
+%         per1 = randperm(q-1, N_eye);
         s = sum(sum(per1==mat2(1:i-1,:)));
     end
     mat2(i,:) = per1;
