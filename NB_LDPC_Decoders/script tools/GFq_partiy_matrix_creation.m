@@ -8,9 +8,6 @@ eye_size = 34;
 
 M = M_eye*eye_size;
 N = N_eye*eye_size;
-
-
-
 p = log2(q);
 
 H = zeros(M, N);
@@ -31,8 +28,6 @@ for  i = 2 : M_eye
     mat1(i,:) = per1;
 end
 
-
-
 mat2 = zeros(M_eye, N_eye);
 
 per1 = randi([1 q-1], 1, N_eye);
@@ -49,7 +44,6 @@ for  i = 2 : M_eye
 end
 
 H1 = H;
-
 for  i = 1 : M_eye
     for j = 1 : N_eye
         c1 = circshift(eye(eye_size), mat1(i, j));
@@ -58,7 +52,6 @@ for  i = 1 : M_eye
     end
     
 end
-
 h = H1;
 
 fl1 = ['generated_' num2str(M) 'x' num2str(N) '_GF' num2str(q) '.mat'];
