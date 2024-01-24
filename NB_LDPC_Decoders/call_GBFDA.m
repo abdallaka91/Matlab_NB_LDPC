@@ -15,7 +15,7 @@ H = h;
 
 refresh_figure_every = 20;
 comput_SER_BER = true;
-ebn0 = 4.4:0.25:5.25;
+ebn0 = 4.2:0.2:5.20;
 p = ceil(log2(max(max(H))+0.1));
 q = 2^p;
 max_err_cnt = 100;

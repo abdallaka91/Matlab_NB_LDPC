@@ -1,7 +1,8 @@
 clear
 
-q = 64;
-N_eye = 26;
+pth4 = (fullfile(fileparts(pwd), 'related_variables\alists\'));
+q = 8;
+N_eye = 16;
 M_eye = 4;
 eye_size = q-1;
 
@@ -34,13 +35,13 @@ end
 
 mat2 = zeros(M_eye, N_eye);
 
-per1 = randperm(q-1, N_eye);
+per1 = randi([1 q-1], 1, N_eye);
 mat2(1,:) = per1;
 for  i = 2 : M_eye
 
     s=1;
     while s~=0
-        per1 = randperm(q-1, N_eye);
+        per1 = randi([1 q-1], 1, N_eye);
         s = sum(sum(per1==mat2(1:i-1,:)));
     end
     mat2(i,:) = per1;
@@ -59,8 +60,9 @@ end
 
 h = H1;
 
-save(['C:\Users\Abdallah Abdallah\Documents\Abdallah france\PhD\Matlab\nb_ldpc\alists\Generated_' ...
-    num2str(M) 'x' num2str(N) '_GF' num2str(q) '.mat'],'h')
+fl1 = ['generated_' num2str(M) 'x' num2str(N) '_GF' num2str(q) '.mat'];
+fll_nm = fullfile(pth4, fl1);
+save(fll_nm,'h')
 
 
 
