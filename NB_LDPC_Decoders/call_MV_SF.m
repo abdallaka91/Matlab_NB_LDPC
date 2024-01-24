@@ -1,4 +1,19 @@
-clear
+clear;
+
+comput_SER_BER = true;
+
+v0 = 0.5;
+v1 = 0.25;
+vi = 2;
+nui = 2; % nb of locations to change
+
+refresh_figure_every = 20;
+max_err_cnt = 50;
+max_gen = 5e4;
+max_iter = 10;
+ebn0 = 4:0.2:5; %dB
+H_matrix_mat_fl_nm = 'Generated_124x806_GF32';
+
 
 pth1 = (fullfile(pwd, 'related_functions\'));
 addpath(pth1);
@@ -8,21 +23,14 @@ pth4 = (fullfile(pwd, 'related_variables\alists\'));
 pth5 = (fullfile(pwd, 'related_variables\alists\matrices\'));
 pth6 = (fullfile(pwd, 'results\'));
 
-H_matrix_mat_fl_nm = 'Generated_124x806_GF32';
+
 
 load([fullfile(pth4, H_matrix_mat_fl_nm) '.mat']);
 H = h;
 
-refresh_figure_every = 20;
-comput_SER_BER = true;
-ebn0 = 4.4:0.25:5.25;
 p = ceil(log2(max(max(H))+0.1));
 q = 2^p;
-max_err_cnt = 100;
-max_gen_seq = 1e5;
-v = 1;
-max_iter = 20;
-max_iter_needed = 1;
+words = (0:q-1);
 
 
 
@@ -36,21 +44,20 @@ else
     save(fullfile(pth3, ['arith_' num2str(q) '.mat']), 'add_mat' ,'mul_mat','div_mat')
 end
 
-
-lgnd = ['GBFDA__' H_matrix_mat_fl_nm '_' num2str(max_iter) '_Iter_V_'...
-    num2str(v)];
-
-N = size(H,2);
-M = size(H,1);
+M = size(H, 1);
+N = size(H, 2);
 K = N-M;
-Rate = K/N;
 
+lgnd = ['VP_SF__' H_matrix_mat_fl_nm '_' num2str(max_iter) '_Iter_V0_'...
+    num2str(v0) '_V1_' num2str(v1)];
 
-snr_1 = 10.^(ebn0/10);
-N00 = 1./snr_1;
-N0 = N00/Rate;
+p1 = 1;
+Rate = p1*K/N; %p1 is nb of bits per channel use with the modulation, for example for bpsk it is 1
+
+ebn0_n = 10.^(ebn0/10);
+N0 = 1./(Rate*ebn0_n);
 sigma = sqrt(N0/2);
-
+snr = -10*log10(2*sigma.^2);
 
 %%
 info_seq = 0*randi([0 q-1], 1, K);
@@ -60,20 +67,7 @@ code_seq = zeros(1,N);
 y_bin0 = de2bi(code_seq,p);
 y_bin = (-1).^y_bin0;
 H = sparse(H);
-
 %%
-Wmn = cell(M,1);
-syndrm = zeros(1,M);
-
-lst1 = cell(M,1);
-dc = zeros(M,1);
-for i  =1 : M
-    lst1{i} = find(H(i,:));
-    dc(i) = length(lst1{i});
-end
-
-
-
 snr_cnt = length(sigma);
 BERstat = zeros(snr_cnt,1);
 SERstat = zeros(snr_cnt,1);
@@ -93,26 +87,18 @@ FER_HDstat = zeros(snr_cnt,1);
 
 for i0 = 1 : snr_cnt
     last_refresh_cnt = 1;
-    while FER(i0)<max_err_cnt && gen_seq_cnt(i0)<max_gen_seq
+    while FER(i0) < max_err_cnt && gen_seq_cnt(i0)<max_gen
         gen_seq_cnt(i0) = gen_seq_cnt(i0)+1;
         gen_bit_cnt(i0) = gen_bit_cnt(i0) + K*p;
         gen_sym_cnt(i0) = gen_sym_cnt(i0) + K;
 
-
         nse = sigma(i0)*randn(size(y_bin));
         y_bin_nse = y_bin + nse;
 
-        %         bin_HD1 = ones(size(y_bin_nse));
-        %         bin_HD1(y_bin_nse>=0)=0;
-
         LLR_2 = LLR_BPSK_GFq_2D(y_bin_nse, sigma(i0));
 
-        [needed_iter, dec_seq, is_code] = Serial_Enhanced_GBFDA(LLR_2, dc, lst1, q, h,max_iter, ...
-            add_mat, mul_mat, div_mat, v);
+        [iter, dec_seq, success_dec] = nb_ldpc_MV_SF(LLR_2, vi,v0,v1, nui, max_iter, mul_mat, add_mat, div_mat, h);
 
-        if needed_iter>max_iter_needed
-            max_iter_needed = needed_iter;
-        end
 
         rec_info_seq = dec_seq(N+1-K:N);
         nd = sum(rec_info_seq~=info_seq);
@@ -179,4 +165,6 @@ for i0 = 1 : snr_cnt
     saveas(gcf, fullfile(pth6,[lgnd '.fig']))
 end
 %%
+
+
 

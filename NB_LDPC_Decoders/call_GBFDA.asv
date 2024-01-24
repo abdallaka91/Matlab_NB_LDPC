@@ -13,7 +13,6 @@ H_matrix_mat_fl_nm = 'Generated_124x806_GF32';
 load([fullfile(pth4, H_matrix_mat_fl_nm) '.mat']);
 H = h;
 
-refresh_figure_every = 20;
 comput_SER_BER = true;
 ebn0 = 4.4:0.25:5.25;
 p = ceil(log2(max(max(H))+0.1));
@@ -151,7 +150,7 @@ for i0 = 1 : snr_cnt
 
         if gen_seq_cnt(i0)==last_refresh_cnt
 
-            last_refresh_cnt = last_refresh_cnt+refresh_figure_every;
+            last_refresh_cnt = last_refresh_cnt+max_err_cnt-1;
             figure(1)
 
             semilogy(ebn0, FERstat,'ro:', 'LineWidth',1.2)
@@ -166,17 +165,20 @@ for i0 = 1 : snr_cnt
             xlim([ebn0(1) ebn0(end)+1])
             ylim([1e-6 2])
             pause(0.2)
+
+            Whos = whos;
+            workspaceInfo = Whos;
+
+            workspaceStruct = struct();
+
+            for hh = 1:length(workspaceInfo)
+                varName = workspaceInfo(hh).name;
+                workspaceStruct.(varName) = eval(varName);
+            end
+            save(fullfile(pth6,[lgnd '.mat']), 'workspaceStruct')
+            saveas(gcf,'Barchart.png')
         end
     end
-    Whos = whos;
-    workspaceInfo = Whos;
-    workspaceStruct = struct();
-    for hh = 1:length(workspaceInfo)
-        varName = workspaceInfo(hh).name;
-        workspaceStruct.(varName) = eval(varName);
-    end
-    save(fullfile(pth6,[lgnd '.mat']), 'workspaceStruct')
-    saveas(gcf, fullfile(pth6,[lgnd '.fig']))
 end
 %%
 

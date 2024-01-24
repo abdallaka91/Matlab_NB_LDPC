@@ -1,4 +1,4 @@
-clear
+clear;
 
 pth1 = (fullfile(pwd, 'related_functions\'));
 addpath(pth1);
@@ -14,19 +14,22 @@ load([fullfile(pth4, H_matrix_mat_fl_nm) '.mat']);
 H = h;
 
 refresh_figure_every = 20;
-comput_SER_BER = true;
-ebn0 = 4.4:0.25:5.25;
+comput_SER_BER = false;
+teta = [1 0.3 0.3];
+max_err_cnt = 50;
+max_gen = 5e4;
+max_iter = 100;
 p = ceil(log2(max(max(H))+0.1));
 q = 2^p;
-max_err_cnt = 100;
-max_gen_seq = 1e5;
-v = 1;
-max_iter = 20;
-max_iter_needed = 1;
+ebn0 = 4:0.2:5.4; %dB
+words = (0:q-1);
 
-
+M = size(H, 1);
+N = size(H, 2);
+K = N-M;
 
 fl_nm = ['arith_' num2str(q) '.mat'];
+
 if  exist(fullfile(pth3, fl_nm), 'file') == 2
     load(fullfile(pth3, fl_nm));
 else
@@ -36,44 +39,29 @@ else
     save(fullfile(pth3, ['arith_' num2str(q) '.mat']), 'add_mat' ,'mul_mat','div_mat')
 end
 
-
-lgnd = ['GBFDA__' H_matrix_mat_fl_nm '_' num2str(max_iter) '_Iter_V_'...
-    num2str(v)];
-
-N = size(H,2);
-M = size(H,1);
-K = N-M;
-Rate = K/N;
+lgnd = ['D_SFDP__' H_matrix_mat_fl_nm '_' num2str(max_iter) '_Iter_TETA_'...
+    num2str(teta(1)) '_' num2str(teta(2)) '_' num2str(teta(3))];
 
 
-snr_1 = 10.^(ebn0/10);
-N00 = 1./snr_1;
-N0 = N00/Rate;
+p1 = 1;
+Rate = p1*K/N; %p1 is nb of bits per channel use with the modulation, for example for bpsk it is 1
+
+ebn0_n = 10.^(ebn0/10);
+N0 = 1./(Rate*ebn0_n);
 sigma = sqrt(N0/2);
-
-
-%%
-info_seq = 0*randi([0 q-1], 1, K);
-info_seq_bit=(fliplr(de2bi(info_seq,p)))';
-info_seq_bit=info_seq_bit(:);
-code_seq = zeros(1,N);
-y_bin0 = de2bi(code_seq,p);
-y_bin = (-1).^y_bin0;
-H = sparse(H);
+snr = -10*log10(2*sigma.^2);
 
 %%
-Wmn = cell(M,1);
-syndrm = zeros(1,M);
+info_seq = zeros(1, K);
+code_seq = zeros(1, N);
 
-lst1 = cell(M,1);
-dc = zeros(M,1);
-for i  =1 : M
-    lst1{i} = find(H(i,:));
-    dc(i) = length(lst1{i});
-end
+code_seq_bin0 = de2bi(code_seq,p);
+info_seq_bit = de2bi(info_seq,p)';
+info_seq_bit = info_seq_bit(:);
 
-
-
+code_seq_bin = 2*code_seq_bin0-1;
+alphb = de2bi(0:q-1,p);
+%%
 snr_cnt = length(sigma);
 BERstat = zeros(snr_cnt,1);
 SERstat = zeros(snr_cnt,1);
@@ -91,28 +79,35 @@ BER_HDstat = zeros(snr_cnt,1);
 SER_HDstat = zeros(snr_cnt,1);
 FER_HDstat = zeros(snr_cnt,1);
 
+list_CN = cell(M,1);
+list_VN = cell(N,1);
+dc = zeros(M,1);
+dv = zeros(N,1);
+
+for i = 1 : M
+    list_CN{i, 1} = find(h(i,:));
+    dc(i) = length(list_CN{i,1});
+end
+
+for j = 1 : N
+    list_VN{j, 1} = find(h(:,j));
+    dv(j) = length(list_VN{j,1});
+end
+
+
 for i0 = 1 : snr_cnt
     last_refresh_cnt = 1;
-    while FER(i0)<max_err_cnt && gen_seq_cnt(i0)<max_gen_seq
+    while FER(i0) < max_err_cnt && gen_seq_cnt(i0)<max_gen
         gen_seq_cnt(i0) = gen_seq_cnt(i0)+1;
         gen_bit_cnt(i0) = gen_bit_cnt(i0) + K*p;
         gen_sym_cnt(i0) = gen_sym_cnt(i0) + K;
 
+        nse = sigma(i0)*randn(size(code_seq_bin));
+        y_bin_nse = code_seq_bin + nse;
 
-        nse = sigma(i0)*randn(size(y_bin));
-        y_bin_nse = y_bin + nse;
 
-        %         bin_HD1 = ones(size(y_bin_nse));
-        %         bin_HD1(y_bin_nse>=0)=0;
+        [iter, dec_seq, success_dec] = D_SFDP_func(y_bin_nse,alphb, max_iter, mul_mat, add_mat, div_mat, h, list_CN, list_VN, dc, teta);
 
-        LLR_2 = LLR_BPSK_GFq_2D(y_bin_nse, sigma(i0));
-
-        [needed_iter, dec_seq, is_code] = Serial_Enhanced_GBFDA(LLR_2, dc, lst1, q, h,max_iter, ...
-            add_mat, mul_mat, div_mat, v);
-
-        if needed_iter>max_iter_needed
-            max_iter_needed = needed_iter;
-        end
 
         rec_info_seq = dec_seq(N+1-K:N);
         nd = sum(rec_info_seq~=info_seq);
@@ -123,7 +118,6 @@ for i0 = 1 : snr_cnt
 
         FERstat(i0)=FER(i0)/gen_seq_cnt(i0);
         SERstat(i0)= SER(i0)/gen_sym_cnt(i0);
-
         if comput_SER_BER
 
             rec_info_seq_bit=(fliplr(de2bi(rec_info_seq,p)))';
@@ -132,19 +126,22 @@ for i0 = 1 : snr_cnt
             BER(i0)=BER(i0)+size(find(info_seq_bit~=rec_info_seq_bit),1);
             BERstat(i0)=BER(i0)/gen_bit_cnt(i0);
 
-            [~,rec_seq_HD]=max(LLR_2, [],1);
-            rec_seq_HD = rec_seq_HD-1;
+            rec_seq_HD_bin = ones(size(y_bin_nse));
+            rec_seq_HD_bin(y_bin_nse<0) = 0;
+            rec_seq_HD = bi2de(rec_seq_HD_bin)';
+
             rec_info_HD = rec_seq_HD(N+1-K:N);
             nd = sum(rec_info_HD~=info_seq);
-
             if nd ~=0
                 FER_HD(i0) = FER_HD(i0)+1;
                 SER_HD(i0)=SER_HD(i0)+nd;
                 FER_HDstat(i0)=FER_HD(i0)/gen_seq_cnt(i0);
                 SER_HDstat(i0)= SER_HD(i0)/gen_sym_cnt(i0);
             end
+
             rec_info_seq_bit_HD=(fliplr(de2bi(rec_info_HD,p)))';
             rec_info_seq_bit_HD=rec_info_seq_bit_HD(:);
+
             BER_HD(i0)=BER_HD(i0)+size(find(info_seq_bit~=rec_info_seq_bit_HD),1);
             BER_HDstat(i0)=BER_HD(i0)/gen_bit_cnt(i0);
         end
@@ -156,12 +153,13 @@ for i0 = 1 : snr_cnt
 
             semilogy(ebn0, FERstat,'ro:', 'LineWidth',1.2)
             hold on
+            % semilogy(ebn0, FERstat,'b.-','LineWidth',1)
             xlabel('E_b/N_0 (dB)')
             ylabel('FER (Log scale)')
             grid on
+            % legend('1p0 15 iter (160,80) GF64')
             %             legend(lgnd, 'Interpreter','none')
             title(lgnd, 'Interpreter','none')
-
             hold off
             xlim([ebn0(1) ebn0(end)+1])
             ylim([1e-6 2])
