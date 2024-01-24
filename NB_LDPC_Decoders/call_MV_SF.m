@@ -1,6 +1,6 @@
 clear;
 
-comput_SER_BER = true;
+comput_SER_BER = false;
 
 v0 = 0.5;
 v1 = 0.25;
@@ -11,7 +11,7 @@ refresh_figure_every = 20;
 max_err_cnt = 50;
 max_gen = 5e4;
 max_iter = 10;
-ebn0 = 4:0.2:5; %dB
+ebn0 = 4.2:0.2:5; %dB
 H_matrix_mat_fl_nm = 'Generated_124x806_GF32';
 
 
