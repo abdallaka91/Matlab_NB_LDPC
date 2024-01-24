@@ -1,7 +1,7 @@
 clear
 
 pth4 = (fullfile(fileparts(pwd), 'related_variables\alists\'));
-q = 31;
+q = 16;
 N_eye = 6;
 M_eye = 3;
 eye_size = 34;

@@ -8,7 +8,7 @@ pth4 = (fullfile(pwd, 'related_variables\alists\'));
 pth5 = (fullfile(pwd, 'related_variables\alists\matrices\'));
 pth6 = (fullfile(pwd, 'results\'));
 
-H_matrix_mat_fl_nm = 'Generated_124x806_GF32';
+H_matrix_mat_fl_nm = 'generated_102x204_GF16';
 
 load([fullfile(pth4, H_matrix_mat_fl_nm) '.mat']);
 H = h;

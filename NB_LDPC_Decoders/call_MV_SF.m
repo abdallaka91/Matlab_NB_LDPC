@@ -12,7 +12,7 @@ max_err_cnt = 50;
 max_gen = 5e4;
 max_iter = 10;
 ebn0 = 4:0.2:5; %dB
-H_matrix_mat_fl_nm = 'Generated_124x806_GF32';
+H_matrix_mat_fl_nm = 'generated_102x204_GF31';
 
 
 pth1 = (fullfile(pwd, 'related_functions\'));
