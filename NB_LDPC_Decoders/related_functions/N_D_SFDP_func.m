@@ -1,4 +1,5 @@
-function [K, Z, success_dec] = D_SFDP_func(y_bin_nse, alphb, iter_max, mul_mat, add_mat, div_mat, h, list_CN, list_VN, dc, teta)
+function [K, Z, success_dec] = N_D_SFDP_func(y_bin_nse, alphb, iter_max, mul_mat, add_mat, div_mat, h,...
+    list_CN, list_VN, dc, teta, nse_amps, sigma_nse, noise_type)
 
 
 M = size(h,1);
@@ -61,16 +62,17 @@ while K<iter_max
         Vj(j,:) = Zj_cand_dec;
         Zj_cand = alphb(Zj_cand_dec+1,:);
         bao_zj = bina_asym_op(Zj_bin, y_bin_nse(j,:));
-        dist_zj_sigm = Hamm_bin_dist(Zj_bin, alphb(EXIij(idx1, j)+1,:), teta);
+        dist_zj_sigm = Hamm_bin_dist(Zj_bin, alphb(EXIij(idx1, j)+1,:), teta, noise_type, nse_amps, sigma_nse);
         sum_dist_zj_sigm = sum(dist_zj_sigm);
 
         for i = 1 : q-1
             Zj_c = Zj_cand(i,:);
             bao_zj_c = bina_asym_op(Zj_c, y_bin_nse(j,:));
-            dist_zj_c_sigm = Hamm_bin_dist(Zj_c,  alphb(EXIij(idx1, j)+1,:), teta);
+            dist_zj_c_sigm = Hamm_bin_dist(Zj_c,  alphb(EXIij(idx1, j)+1,:), teta, noise_type, nse_amps, sigma_nse);
             sum_dist_zj_c_sigm = sum(dist_zj_c_sigm);
-            Ej(j, i) = bao_zj_c + sum_dist_zj_c_sigm...
-                - bao_zj - sum_dist_zj_sigm;
+
+            Ej(j, i) = bao_zj_c + sum_dist_zj_c_sigm ...
+                - bao_zj - sum_dist_zj_sigm ;
         end
     end
     [Ejmax, i1] = max(Ej,[],2);
@@ -133,25 +135,45 @@ function x = bina_asym_op(z, y)
 x = sum((2*z-1).*y);
 end
 
-function d = Hamm_bin_dist(z, sigm, teta)
+function d = Hamm_bin_dist(z, sigm, teta, noise_type, nse_amps, sigma_nse)
+
 dv = size(sigm, 1);
 d1 = zeros(1, dv);
 d = zeros(1, dv);
 l = length(teta);
+
+if strcmp(noise_type, 'UNIFORM')
+    ns1 = rand(1,dv);
+else
+    ns1 = randn(1,dv);
+end
+
 for i = 1 : dv
     d1(i) = sum(z~=sigm(i, :));
 end
+
+elem1 = ns1;
+
+for i = 1 : dv
+    if d1(i)>length(nse_amps)-1
+        elem1(i) = ns1(i)*nse_amps(end);
+    else
+        elem1(i) = ns1(i)*nse_amps(d1(i)+1)*sigma_nse;
+    end
+end
+
+
 
 for i = 1 : dv
     ll = true;
     for j = 1 : l
         if d1(i)==j-1
-            d(i) = teta(j);
+            d(i) = teta(j) + elem1(i);
             ll=false;
         end
     end
     if ll
-        d(i) = teta(end);
+        d(i) = teta(end) + elem1(i);
     end
 end
 end

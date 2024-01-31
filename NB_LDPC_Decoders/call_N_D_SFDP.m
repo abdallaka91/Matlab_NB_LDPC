@@ -16,12 +16,15 @@ H = h;
 refresh_figure_every = 20;
 comput_SER_BER = false;
 teta = [3 1.4 1.2];
+% nse_amps = [0.5 0.4 0.4]; % uniform
+nse_amps = [0.6 0.3 0.3]; %Gaussian
+noise_type = 'GAUSSIAN';
 max_err_cnt = 100;
 max_gen = 5e4;
 max_iter = 100;
 p = ceil(log2(max(max(H))+0.1));
 q = 2^p;
-ebn0 = 5.75 : 0.25 : 7; %dB
+ebn0 = 4.25 : 0.25 : 4.25; %dB
 words = (0:q-1);
 
 M = size(H, 1);
@@ -39,8 +42,9 @@ else
     save(fullfile(pth3, ['arith_' num2str(q) '.mat']), 'add_mat' ,'mul_mat','div_mat')
 end
 
-lgnd = ['D_SFDP__' H_matrix_mat_fl_nm '_' num2str(max_iter) '_Iter_TETA_'...
-    num2str(teta(1)) '_' num2str(teta(2)) '_' num2str(teta(3))];
+lgnd1 = ['N_D_SFDP_' H_matrix_mat_fl_nm '_' num2str(max_iter) '_Iter_TETA_'...
+    num2str(teta(1)) '_' num2str(teta(2)) '_' num2str(teta(3)) '_'];
+lgnd2 = [noise_type '_Noise_amp_' num2str(nse_amps(1)) '_' num2str(nse_amps(2)) '_' num2str(nse_amps(3))];
 
 
 p1 = 1;
@@ -106,7 +110,8 @@ for i0 = 1 : snr_cnt
         y_bin_nse = code_seq_bin + nse;
 
 
-        [iter, dec_seq, success_dec] = D_SFDP_func(y_bin_nse,alphb, max_iter, mul_mat, add_mat, div_mat, h, list_CN, list_VN, dc, teta);
+        [iter, dec_seq, success_dec] = N_D_SFDP_func(y_bin_nse,alphb, max_iter, mul_mat, add_mat, div_mat, h,...
+            list_CN, list_VN, dc, teta, nse_amps, sigma(i0), noise_type);
 
 
         rec_info_seq = dec_seq(N+1-K:N);
@@ -159,7 +164,7 @@ for i0 = 1 : snr_cnt
             grid on
             % legend('1p0 15 iter (160,80) GF64')
             %             legend(lgnd, 'Interpreter','none')
-            title(lgnd, 'Interpreter','none')
+            title({lgnd1 lgnd2}, 'Interpreter','none')
             hold off
             xlim([ebn0(1) ebn0(end)+1])
             ylim([1e-6 2])
@@ -173,8 +178,8 @@ for i0 = 1 : snr_cnt
         varName = workspaceInfo(hh).name;
         workspaceStruct.(varName) = eval(varName);
     end
-    save(fullfile(pth6,[lgnd '.mat']), 'workspaceStruct')
-    saveas(gcf, fullfile(pth6,[lgnd '.fig']))
+    save(fullfile(pth6,[lgnd1 lgnd2 '.mat']), 'workspaceStruct')
+    saveas(gcf, fullfile(pth6,[lgnd1 lgnd2 '.fig']))
 end
 %%
 
