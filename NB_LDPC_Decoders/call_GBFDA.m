@@ -8,20 +8,20 @@ pth4 = (fullfile(pwd, 'related_variables\alists\'));
 pth5 = (fullfile(pwd, 'related_variables\alists\matrices\'));
 pth6 = (fullfile(pwd, 'results\'));
 
-H_matrix_mat_fl_nm = 'generated_102x204_GF16';
+H_matrix_mat_fl_nm = '204.102.3.6.16';
 
 load([fullfile(pth4, H_matrix_mat_fl_nm) '.mat']);
 H = h;
 
 refresh_figure_every = 20;
 comput_SER_BER = true;
-ebn0 = 4.2:0.2:5.20;
+ebn0 = 4.2:0.2:4.20;
 p = ceil(log2(max(max(H))+0.1));
 q = 2^p;
 max_err_cnt = 100;
 max_gen_seq = 1e5;
 v = 1;
-max_iter = 20;
+max_iter = 10;
 max_iter_needed = 1;
 
 

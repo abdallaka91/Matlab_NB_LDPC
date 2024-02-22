@@ -1,4 +1,4 @@
-function [iter, dec_seq, success_dec] = nb_ldpc_MV_SF(LLR_2, vi,v0v1, nui, iter_max, mul_mat, add_mat, div_mat, combs, h)
+function [iter, dec_seq, success_dec] = nb_ldpc_MV_SF1(LLR_2, vi,v0v1, nui, iter_max, mul_mat, add_mat, div_mat, combs, h)
 
 v0 = v0v1(1);
 v1 = v0v1(2);
@@ -48,13 +48,13 @@ while iter<iter_max
             Dwnm{i}(j, :) = Wn(idx1(j),:) - Wmn{i}(j, :);
             temp1 = Dwnm{i}(j, :);
             [a,b] = sort(temp1,'descend');
-%             mn_idx(j0,2) = ;
+            %             mn_idx(j0,2) = ;
             mn_idx(j,1) = a(1)-a(2);
             b0 = b - 1;
             Qnm = b0;
             Qnm_3d{i}(j, :) = Qnm;
             Lnm_3d{i}(j, :) = Qnm(1:vi);
-%             Dwnm{i}(j, :) = Dwnm{i}(j, b);%---------------------------------->>>>> hereeee
+            %             Dwnm{i}(j, :) = Dwnm{i}(j, b);%---------------------------------->>>>> hereeee
         end
 
         [a,b] = sort(mn_idx(:,1));
@@ -91,23 +91,21 @@ while iter<iter_max
 
         %     Vmn{i} is zeros(M,dc(i),size(combs,1));
         for l = 1 :L1
+
+            ii2 = R{i}(:,l)+1;
             a1 = Tml{i}(:,l);
             b1 = (squeeze(Qnm_3d{i}(:,1)));
             eq = a1==b1;
-
-            iiv0 = (eq);
-            iiv1 = (~eq);
-%             Vmn{i}(iiv0,l) = v0;
-%             Vmn{i}(iiv1,l) = v1;
-                        if prod(eq)
-                            Vmn{i}(:,l) = v0;
-                        else
-                            Vmn{i}(:,l) = v1;
-                        end
-
-
-            ii2 = R{i}(:,l)+1;
+            tp1 = eq;
             for j1 = 1 : dc(i)
+                tp1(j1) = prod(eq([1:j1-1 j1+1:end]));
+            end
+            iiv0 = (tp1);
+            iiv1 = (~tp1);
+            Vmn{i}(iiv0,l) = v0;
+            Vmn{i}(iiv1,l) = v1;
+            for j1 = 1 : dc(i)
+                
                 Wmn{i}(j1, ii2(j1)) = Wmn{i}(j1, ii2(j1)) + Vmn{i}(j1, l);
                 Wn(idx1(j1), ii2(j1)) = Wn(idx1(j1), ii2(j1)) + Vmn{i}(j1, l);
             end
@@ -118,7 +116,7 @@ while iter<iter_max
     dec_seq = dec_seq' - 1;
 
     synd = Inf(1,M);
-    
+
     for j1 = 1 : M
         idx1 = str_cn_vn{j1};
         tempc = zeros(dc(j1),1);
@@ -135,5 +133,5 @@ while iter<iter_max
     if success_dec
         break
     end
-    
+
 end

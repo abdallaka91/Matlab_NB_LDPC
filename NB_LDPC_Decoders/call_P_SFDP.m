@@ -15,13 +15,13 @@ H = h;
 
 refresh_figure_every = 20;
 comput_SER_BER = false;
-teta = [3 1.4 1.2];
+etta = [0 1.3 2.7 3.5];
 max_err_cnt = 100;
 max_gen = 5e4;
 max_iter = 100;
 p = ceil(log2(max(max(H))+0.1));
 q = 2^p;
-ebn0 = 5.75 : 0.25 : 7; %dB
+ebn0 = 3 : 0.25 : 7; %dB
 words = (0:q-1);
 
 M = size(H, 1);
@@ -40,11 +40,11 @@ else
 end
 
 temp = [];
-for i = 1 : length(teta)
-    temp = [temp num2str(teta(i)) '_'];
+for i = 1 : length(etta)
+    temp = [temp num2str(etta(i)) '_'];
 end
 temp(end)=[];
-lgnd = ['D_SFDP__' H_matrix_mat_fl_nm '_' num2str(max_iter) '_Iter_TETA_' temp];
+lgnd = ['P_SFDP_' H_matrix_mat_fl_nm '_' num2str(max_iter) '_Iter_TETA_' temp];
 
 
 p1 = 1;
@@ -110,7 +110,7 @@ for i0 = 1 : snr_cnt
         y_bin_nse = code_seq_bin + nse;
 
 
-        [iter, dec_seq, success_dec] = D_SFDP_func(y_bin_nse,alphb, max_iter, mul_mat, add_mat, div_mat, h, list_CN, list_VN, dc, teta);
+        [iter, dec_seq, success_dec] = P_SFDP_func(y_bin_nse,alphb, max_iter, mul_mat, add_mat, div_mat, h, list_CN, list_VN, dc, etta);
 
 
         rec_info_seq = dec_seq(N+1-K:N);

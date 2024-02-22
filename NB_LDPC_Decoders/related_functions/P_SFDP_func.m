@@ -1,9 +1,10 @@
-function [K, Z, success_dec] = D_SFDP_func(y_bin_nse, alphb, iter_max, mul_mat, add_mat, div_mat, h, list_CN, list_VN, dc, teta)
+function [K, Z, success_dec] = P_SFDP_func(y_bin_nse, alphb_bin, iter_max, mul_mat, add_mat, div_mat, h, list_CN, list_VN, dc, etta)
 
 
+alphb = bi2de(alphb_bin);
 M = size(h,1);
 N = size(h,2);
-q = size(alphb,1);
+q = size(alphb_bin,1);
 p = log2(q);
 
 
@@ -12,17 +13,8 @@ Z_bin = ones(size(y_bin_nse));
 Z_bin(y_bin_nse<0) = 0;
 
 for i = 1 : N
-%     for j = 1 : q
-%         if Z_bin(i,:)==alphb(j, :)
-%             Z(i) = j-1;
-%             break;
-%         end
-%     end
 Z(i) = bi2de( Z_bin(i,:));
 end
-
-
-
 
 K = 0;
 
@@ -57,20 +49,20 @@ while K<iter_max
         idx1 = list_VN{j};
         Zj = Z(j);
         Zj_bin = Z_bin(j,:);
-        Zj_cand_dec = [0:Zj-1 Zj+1:q-1];
-        Vj(j,:) = Zj_cand_dec;
-        Zj_cand = alphb(Zj_cand_dec+1,:);
+        Zj_cand = [0:Zj-1 Zj+1:q-1];
+        Zj_cand_bin = alphb_bin(Zj_cand+1,:);
+        Vj(j,:) = Zj_cand;
         bao_zj = bina_asym_op(Zj_bin, y_bin_nse(j,:));
-        dist_zj_sigm = Hamm_bin_dist(Zj_bin, alphb(EXIij(idx1, j)+1,:), teta);
-        sum_dist_zj_sigm = sum(dist_zj_sigm);
+        sigmj = EXIij(idx1, j);
+        nZj = sum(Zj==sigmj);
+        Ej(j, :) = - bao_zj - etta(nZj+1);
 
         for i = 1 : q-1
-            Zj_c = Zj_cand(i,:);
-            bao_zj_c = bina_asym_op(Zj_c, y_bin_nse(j,:));
-            dist_zj_c_sigm = Hamm_bin_dist(Zj_c,  alphb(EXIij(idx1, j)+1,:), teta);
-            sum_dist_zj_c_sigm = sum(dist_zj_c_sigm);
-            Ej(j, i) = bao_zj_c + sum_dist_zj_c_sigm...
-                - bao_zj - sum_dist_zj_sigm;
+            Zj_c = Zj_cand(i);
+            Zj_c_bin = Zj_cand_bin(i,:);
+            bao_zj_c = bina_asym_op(Zj_c_bin, y_bin_nse(j,:));
+            nZj_c = sum(Zj_c==EXIij(idx1, j));
+            Ej(j, i) = Ej(j, i) + bao_zj_c + etta(nZj_c+1);               ;
         end
     end
     [Ejmax, i1] = max(Ej,[],2);
@@ -128,30 +120,7 @@ while K<iter_max
 end
 end
 
-
 function x = bina_asym_op(z, y)
 x = sum((2*z-1).*y);
 end
 
-function d = Hamm_bin_dist(z, sigm, teta)
-dv = size(sigm, 1);
-d1 = zeros(1, dv);
-d = zeros(1, dv);
-l = length(teta);
-for i = 1 : dv
-    d1(i) = sum(z~=sigm(i, :));
-end
-
-for i = 1 : dv
-    ll = true;
-    for j = 1 : l
-        if d1(i)==j-1
-            d(i) = teta(j);
-            ll=false;
-        end
-    end
-    if ll
-        d(i) = teta(end);
-    end
-end
-end
