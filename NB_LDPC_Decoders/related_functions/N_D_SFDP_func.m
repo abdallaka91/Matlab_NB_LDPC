@@ -176,4 +176,8 @@ for i = 1 : dv
         d(i) = teta(end) + elem1(i);
     end
 end
+<<<<<<< HEAD
 end
+=======
+end
+>>>>>>> 7cc68eb92025b4bc2ad08fb9ecef5781a79541ba

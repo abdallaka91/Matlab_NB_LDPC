@@ -14,7 +14,11 @@ load([fullfile(pth4, H_matrix_mat_fl_nm) '.mat']);
 H = h;
 
 refresh_figure_every = 20;
+<<<<<<< HEAD
 comput_SER_BER = true;
+=======
+comput_SER_BER = false;
+>>>>>>> 7cc68eb92025b4bc2ad08fb9ecef5781a79541ba
 teta = [3 1.4 1.2];
 % nse_amps = [0.5 0.4 0.4]; % uniform
 nse_amps = [0.6 0.3 0.3]; %Gaussian
@@ -24,7 +28,11 @@ max_gen = 5e4;
 max_iter = 100;
 p = ceil(log2(max(max(H))+0.1));
 q = 2^p;
+<<<<<<< HEAD
 ebn0 = 3 : 0.25 : 5.25; %dB
+=======
+ebn0 = 4.25 : 0.25 : 4.25; %dB
+>>>>>>> 7cc68eb92025b4bc2ad08fb9ecef5781a79541ba
 words = (0:q-1);
 
 M = size(H, 1);
@@ -98,8 +106,13 @@ for j = 1 : N
     dv(j) = length(list_VN{j,1});
 end
 
+<<<<<<< HEAD
 tic
 parfor i0 = 1 : snr_cnt
+=======
+
+for i0 = 1 : snr_cnt
+>>>>>>> 7cc68eb92025b4bc2ad08fb9ecef5781a79541ba
     last_refresh_cnt = 1;
     while FER(i0) < max_err_cnt && gen_seq_cnt(i0)<max_gen
         gen_seq_cnt(i0) = gen_seq_cnt(i0)+1;
@@ -151,6 +164,7 @@ parfor i0 = 1 : snr_cnt
             BER_HDstat(i0)=BER_HD(i0)/gen_bit_cnt(i0);
         end
 
+<<<<<<< HEAD
         %         if gen_seq_cnt(i0)==last_refresh_cnt
         %
         %             last_refresh_cnt = last_refresh_cnt+refresh_figure_every;
@@ -209,3 +223,37 @@ hold off
 xlim([ebn0(1) ebn0(end)+1])
 ylim([1e-6 2])
 pause(0.2)
+=======
+        if gen_seq_cnt(i0)==last_refresh_cnt
+
+            last_refresh_cnt = last_refresh_cnt+refresh_figure_every;
+            figure(1)
+
+            semilogy(ebn0, FERstat,'ro:', 'LineWidth',1.2)
+            hold on
+            % semilogy(ebn0, FERstat,'b.-','LineWidth',1)
+            xlabel('E_b/N_0 (dB)')
+            ylabel('FER (Log scale)')
+            grid on
+            % legend('1p0 15 iter (160,80) GF64')
+            %             legend(lgnd, 'Interpreter','none')
+            title({lgnd1 lgnd2}, 'Interpreter','none')
+            hold off
+            xlim([ebn0(1) ebn0(end)+1])
+            ylim([1e-6 2])
+            pause(0.2)
+        end
+    end
+    Whos = whos;
+    workspaceInfo = Whos;
+    workspaceStruct = struct();
+    for hh = 1:length(workspaceInfo)
+        varName = workspaceInfo(hh).name;
+        workspaceStruct.(varName) = eval(varName);
+    end
+    save(fullfile(pth6,[lgnd1 lgnd2 '.mat']), 'workspaceStruct')
+    saveas(gcf, fullfile(pth6,[lgnd1 lgnd2 '.fig']))
+end
+%%
+
+>>>>>>> 7cc68eb92025b4bc2ad08fb9ecef5781a79541ba
