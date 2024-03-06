@@ -6,7 +6,7 @@ comput_SER_BER = false;
 v0v1 = [0.5 0.25];
 vi = 3;
 nui = 2; % nb of locations to change
-L=6;
+L=6;%
 LLRfact = 4;
 unreliable_sat=-50;
 
