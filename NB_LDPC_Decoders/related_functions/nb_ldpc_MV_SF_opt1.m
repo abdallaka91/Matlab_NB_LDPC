@@ -1,4 +1,4 @@
-function [iter, dec_seq, success_dec] = nb_ldpc_MV_SF_opt1(LLR_2, vi,v0v1, nui, iter_max, mul_mat, add_mat, div_mat, combs, h)
+function [iter, dec_seq, success_dec] = nb_ldpc_MV_SF_opt1(LLR_2, vi,v0v1, nui,L, iter_max, mul_mat, add_mat, div_mat, combs, h)
 
 v0 = v0v1(1);
 v1 = v0v1(2);
@@ -61,7 +61,7 @@ while iter<iter_max
         [a,b] = sort(mn_idx(:,1));
         idx_chng= b(1:nui);
         mn_idx_m{i} = idx_chng;
-        L1 = vi^nui;
+        L1 = L;%vi^nui;
         mult = -ones(1, dc(i));
         tml = Lnm_3d{i}(:,1);
         coef = h(i,idx1);

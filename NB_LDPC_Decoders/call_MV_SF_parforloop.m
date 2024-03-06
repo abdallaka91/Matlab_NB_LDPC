@@ -1,15 +1,20 @@
-clear;
+clear;%/home/abdallah/Downloads/NB_LDPC_Decoders/call_MV_SF_parforloop.m
 restoredefaultpath
 comput_SER_BER = false;
 
 % v0v1 = [2.4 1];
 v0v1 = [0.5 0.25];
-vi = 2;
+vi = 3;
 nui = 2; % nb of locations to change
-max_err_cnt = 80;
+L=6;
+LLRfact = 4;
+unreliable_sat=-50;
+
+max_err_cnt = 50;
 max_gen = 0.5e6;
 max_iter = 10;
-ebn0 = 4.0:0.1:4.6; %dB
+ebn0 = 4.3; %dB
+
 
 pth1 = (fullfile(pwd, 'related_functions'));
 addpath(pth1);
@@ -28,7 +33,7 @@ H_matrix_mat_fl_nm = '837_124_32';
 load([fullfile(pth4, H_matrix_mat_fl_nm) '.mat']);
 H=h;
 h=H; %%--------------------->>>>>> K is not here size(H,2)-size(H,1)
-K = 723;
+K = 726;
 N = size(h,2);
 M = size(h,1);
 
@@ -60,16 +65,19 @@ snr = -10*log10(2*sigma.^2);
 
 %%
 info_seq = 0*randi([0 q-1], 1, K);
-info_seq_bit=(fliplr(de2bi(info_seq,p)))';
+% info_seq_bit=(fliplr(de2bi(info_seq,p)))';
+info_seq_bit = fliplr(dec2bin(info_seq, p) - 48)';
 info_seq_bit=info_seq_bit(:);
 code_seq = zeros(1,N);
-y_bin0 = de2bi(code_seq,p);
+% y_bin0 = de2bi(code_seq,p);
+y_bin0 = fliplr(dec2bin(code_seq, p) - 48);
 y_bin = (-1).^y_bin0;
 %%
 alph1 = 1:vi;
 combs = alph1;
 for j0 = 2:nui
-    combs = combvec(combs, alph1);
+    % combs = combvec(combs, alph1);
+    combs = CombVec(combs, alph1);
 end
 combs = combs';
 
@@ -95,8 +103,8 @@ for i0 = 1 : snr_cnt
             nse = sigm*randn(size(y_bin));
             y_bin_nse = y_bin + nse;
 %             LLR_2 = LLR_BPSK_GFq_2D(y_bin_nse, sigm);
-            LLR_2 = 0.5*LLR_simple2(y_bin_nse,p, sigm);
-            [iter, dec_seq, success_dec] = nb_ldpc_MV_SF_opt1(LLR_2, vi,v0v1, nui, max_iter, mul_mat, add_mat, div_mat,combs, h);
+            LLR_2 = LLR_simple3(y_bin_nse, p,LLRfact , unreliable_sat);
+            [iter, dec_seq, success_dec] = nb_ldpc_MV_SF_opt1(LLR_2, vi,v0v1, nui,L, max_iter, mul_mat, add_mat, div_mat,combs, h);
             rec_info_seq = dec_seq(N+1-K:N);
             nd = sum(rec_info_seq~=info_seq);
             if nd ~=0
@@ -136,10 +144,14 @@ end
 % title('GF(256), (255, 175), L=4')
 % legend({'our code, itr=10, v0=0.5,v1=0.25'; 'author code, itr=15, v0v1v2'})
 %%
+
 % ebn00 = ebn0';
 % FERstat0 = FER./gen_seq_cnt;
 % 
-% FERstat1 = [0.2 0.1 0.03 0.007 0.0015 0.00025 0.000025];
+% FERstat0 = [91/400 94/800 80/2000 80/5800 80/23700 95/165500 8/83000];
+% ebn00 = 4:0.1:4.6;
+% 
+% FERstat1 = [0.2 0.1 0.03 0.007 0.0015 0.00025 0.000055];
 % ebn01 = 4:0.1:4.6;
 % 
 % figure(1)
@@ -152,7 +164,7 @@ end
 % ylabel('FER (Log scale)')
 % grid on
 % xlim([3 5])
-% ylim([10e-5 1])
+% ylim([10e-6 1])
 % title('GF(32), (837, 726), L=4')
 % legend({'our code, L=4, itr=10, v0=0.5,v1=0.25'; 'author code, L=4, itr=10, v0=0.5 v1=0.25'})
 %%
@@ -169,6 +181,5 @@ end
 % ylim([10e-5 1])
 % title('GF(256), (255, 175), L=4')
 % legend({'our code, itr=10, v=1'; 'author code, itr=15, v=1'})
-
 
 
