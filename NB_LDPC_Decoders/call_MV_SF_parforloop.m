@@ -13,7 +13,7 @@ unreliable_sat=-50;
 max_err_cnt = 50;
 max_gen = 0.5e6;
 max_iter = 10;
-ebn0 = 4.3; %dB
+ebn0 = 4.0; %dB
 
 
 pth1 = (fullfile(pwd, 'related_functions'));
@@ -29,15 +29,15 @@ addpath(pth7);
 
 % H_matrix_mat_fl_nm = '837_124_32';
 % H_matrix_mat_fl_nm = '204.102.3.6.16';
-H_matrix_mat_fl_nm = '837_124_32';
+H_matrix_mat_fl_nm = '204.102.3.6.16';
 load([fullfile(pth4, H_matrix_mat_fl_nm) '.mat']);
 H=h;
 h=H; %%--------------------->>>>>> K is not here size(H,2)-size(H,1)
-K = 726;
+K = 102;
 N = size(h,2);
 M = size(h,1);
 
-p = 5;%ceil(log2(max(max(H))+0.1));
+p = 4;%ceil(log2(max(max(H))+0.1));
 q = 2^p;
 words = (0:q-1);
 
