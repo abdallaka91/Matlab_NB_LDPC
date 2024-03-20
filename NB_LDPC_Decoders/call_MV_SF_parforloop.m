@@ -89,16 +89,18 @@ FER = zeros(snr_cnt,1);
 
 parforN = 100;
 
-for i0 = 1 : snr_cnt
+%for i0 = 1 : snr_cnt
+  i0 = 1
     FER_ = 0;
     gen_seq_cnt_ = 0;
     msg = sprintf("EbNo = %.3f dB, V0_V1= [%.3f %.3f], Error frames/Total frames = %d/%d => FER = %.8f\n",...
         ebn0(i0), v0v1(1), v0v1(2), FER(i0), gen_seq_cnt(i0), FER(i0)/gen_seq_cnt(i0));
     fprintf(msg)
     sigm =sigma(i0);
-    while FER(i0) < max_err_cnt && gen_seq_cnt(i0)<max_gen
+    %while FER(i0) < max_err_cnt && gen_seq_cnt(i0)<max_gen
         tic
-        parfor j = 1 : parforN
+     %   for j = 1 : parforN
+     j = 1
             gen_seq_cnt_ = gen_seq_cnt_+1;
             nse = sigm*randn(size(y_bin));
             y_bin_nse = y_bin + nse;
@@ -110,7 +112,7 @@ for i0 = 1 : snr_cnt
             if nd ~=0
                 FER_ = FER_ +1;
             end
-        end
+      %  end
         TOC=toc;
         gen_seq_cnt(i0) = gen_seq_cnt_;
         FER(i0) = FER_;
@@ -121,18 +123,18 @@ for i0 = 1 : snr_cnt
             ebn0(i0), v0v1(1), v0v1(2), FER(i0), gen_seq_cnt(i0), FER(i0)/gen_seq_cnt(i0));
         fprintf(msg)
 
-    end
-end
+    %end
+%end
 %%
 % ebn00 = ebn0';
 % FERstat0 = FER./gen_seq_cnt;
-% 
+%
 % FERstat1 = [0.09 0.04 0.015 0.005 0.0015 0.00042 0.0 0.0];
 % ebn01 = 4:0.1:4.7;
-% 
+%
 % figure(1)
-% 
-% 
+%
+%
 % semilogy(ebn00, FERstat0,'bo:', 'LineWidth',1.2)
 % hold on
 % semilogy(ebn01, FERstat1,'ro:', 'LineWidth',1.2)
@@ -147,16 +149,16 @@ end
 
 % ebn00 = ebn0';
 % FERstat0 = FER./gen_seq_cnt;
-% 
+%
 % FERstat0 = [91/400 94/800 80/2000 80/5800 80/23700 95/165500 8/83000];
 % ebn00 = 4:0.1:4.6;
-% 
+%
 % FERstat1 = [0.2 0.1 0.03 0.007 0.0015 0.00025 0.000055];
 % ebn01 = 4:0.1:4.6;
-% 
+%
 % figure(1)
-% 
-% 
+%
+%
 % semilogy(ebn00, FERstat0,'bo:', 'LineWidth',1.2)
 % hold on
 % semilogy(ebn01, FERstat1,'ro:', 'LineWidth',1.2)
@@ -170,7 +172,7 @@ end
 %%
 % FERstat1 = [0.3 0.21 0.12 0.055 0.025 0.008 0.003 0.0008 0.00025 0.000065];
 % ebn01 = 4:0.1:4.9;
-% 
+%
 % figure(3)
 % hold on
 % semilogy(ebn01, FERstat1,'ro:', 'LineWidth',1.2)
